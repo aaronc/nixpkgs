@@ -24071,7 +24071,7 @@ in {
       # but that url does not work. This following web page points to the
       # download link and has some information about the package.
       homepage = http://pypi.python.org/pypi/Skype4Py/1.0.32.0;
-
+      broken = true;
       license = "BSD";
     };
   });
