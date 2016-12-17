@@ -8257,6 +8257,7 @@ in {
         pytestcov
         pytestflakes
         pytestpep8
+        pytest
         mock
       ]
       # pathlib was made part of standard library in 3.5:
