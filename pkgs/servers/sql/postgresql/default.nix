@@ -3,7 +3,10 @@
 let
 
   common = { version, sha256, psqlSchema } @ args:
-   let atLeast = lib.versionAtLeast version; in stdenv.mkDerivation (rec {
+   let
+     atLeast = lib.versionAtLeast version;
+     olderThan = lib.versionOlder version;
+   in stdenv.mkDerivation (rec {
     name = "postgresql-${version}";
 
     src = fetchurl {
@@ -32,8 +35,8 @@ let
 
     patches =
       [ (if atLeast "9.4" then ./disable-resolve_symlinks-94.patch else ./disable-resolve_symlinks.patch)
-        (if atLeast "9.6" then ./less-is-more-96.patch             else ./less-is-more.patch)
-        (if atLeast "9.6" then ./hardcode-pgxs-path-96.patch       else ./hardcode-pgxs-path.patch)
+        (if atLeast "9.6" && olderThan "10" then ./less-is-more-96.patch             else ./less-is-more.patch)
+        (if atLeast "9.6" && olderThan "10" then ./hardcode-pgxs-path-96.patch       else ./hardcode-pgxs-path.patch)
         ./specify_pkglibdir_at_runtime.patch
       ];
 
@@ -42,7 +45,7 @@ let
     LC_ALL = "C";
 
     postConfigure =
-      let path = if atLeast "9.6" then "src/common/config_info.c" else "src/bin/pg_config/pg_config.c"; in
+      let path = if atLeast "9.6" && olderThan "10" then "src/common/config_info.c" else "src/bin/pg_config/pg_config.c"; in
         ''
           # Hardcode the path to pgxs so pg_config returns the path in $out
           substituteInPlace "${path}" --replace HARDCODED_PGXS_PATH $out/lib
@@ -121,9 +124,14 @@ in {
   };
 
   postgresql96 = common {
-    version = "9.6.2";
+    version = "9.6.3";
     psqlSchema = "9.6";
-    sha256 = "1jahzqqw5inyvmacic2ihhj5f8z50lapci2fwws91h719ccbb1q1";
+    sha256 = "1imrjp4vfslxj5rrvphcrrk21zv8kqw3gacmwradixh1d5rv6i8n";
   };
 
+  postgresql100 = common {
+    version = "10beta1";
+    psqlSchema = "10";
+    sha256 = "1l3fqxlpxgl6nrcd4h6lpi2hsiv56yg83n3xrn704rmdch8mfpng";
+  };
 }
